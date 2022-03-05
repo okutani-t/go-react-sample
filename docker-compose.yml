@@ -1,0 +1,48 @@
+version: '3'
+services:
+  front:
+    build:
+      context: .
+      dockerfile: ./docker/react/Dockerfile
+    container_name: front_container
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./front:/app/react
+    ports:
+      - 3000:3000
+  api:
+    build:
+      context: .
+      dockerfile: ./docker/golang/Dockerfile
+    container_name: api_container
+    ports:
+      - 8080:8080
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./api:/go/src/app
+    depends_on:
+      - db
+  db:
+    build:
+      context: .
+      dockerfile: ./docker/mysql/Dockerfile
+    container_name: mysql_container
+    # if your pc is m1 mac, add this line
+    platform: linux/x86_64
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_USER: mysql
+      MYSQL_DATABASE: go_react_sample
+      MYSQL_PASSWORD: password
+      TZ: 'Asia/Tokyo'
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - ./db-data:/var/lib/mysql
+    ports:
+      - 3307:3306
+
+volumes:
+  db-data:
+    driver: local
